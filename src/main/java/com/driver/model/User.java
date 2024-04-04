@@ -5,17 +5,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name="user")
 public class User {
+
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String name;
     private String phoneNumber;
     private String password;
-    @OneToMany(mappedBy ="user",cascade =CascadeType.ALL)
-    List<Reservation> reservationList;
-
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    List<Reservation> reservationList = new ArrayList<>();
     public User() {
     }
 
@@ -24,7 +23,7 @@ public class User {
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.password = password;
-        this.reservationList = new ArrayList<>();
+        this.reservationList = reservationList;
     }
 
     public int getId() {

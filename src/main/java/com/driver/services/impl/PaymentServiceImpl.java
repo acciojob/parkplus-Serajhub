@@ -1,9 +1,9 @@
 package com.driver.services.impl;
 
+import com.driver.controllers.ReservationController;
 import com.driver.model.Payment;
-import com.driver.model.Reservation;
-import com.driver.model.Spot;
 import com.driver.model.PaymentMode;
+import com.driver.model.Reservation;
 import com.driver.repository.PaymentRepository;
 import com.driver.repository.ReservationRepository;
 import com.driver.services.PaymentService;
@@ -19,34 +19,52 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Payment pay(Integer reservationId, int amountSent, String mode) throws Exception {
-        Reservation reservation=reservationRepository2.findById(reservationId).get();
-        Spot spot=reservation.getSpot();
 
-        Payment payment=reservation.getPayment();
-        int bill=reservation.getNumberOfHours()*reservation.getSpot().getPricePerHour();
+        Reservation reservation = reservationRepository2.findById(reservationId).get();
 
-        String modeType=mode.toUpperCase();
-        if(modeType.equals("CASH")){
+        int totalAmount = reservation.getNumberOfHours() * reservation.getSpot().getPricePerHour();
+
+        if(amountSent<totalAmount)
+        {
+            throw new Exception("Insufficient Amount");
+        }
+        Payment payment;
+        if(mode.equalsIgnoreCase("CASH"))
+        {
+            payment = new Payment();
+            payment.setPaymentCompleted(true);
             payment.setPaymentMode(PaymentMode.CASH);
-        }
-        else if(modeType.equals("CARD")) {
+            payment.setReservation(reservation);
+            reservation.setPayment(payment);
+            reservationRepository2.save(reservation);
+
+        } else if (mode.equalsIgnoreCase("CARD")) {
+
+            payment = new Payment();
+            payment.setPaymentCompleted(true);
             payment.setPaymentMode(PaymentMode.CARD);
-        }
-        else if(modeType.equals("UPI")){
+            payment.setReservation(reservation);
+            reservation.setPayment(payment);
+            reservationRepository2.save(reservation);
+        } else if (mode.equalsIgnoreCase("UPI")) {
+
+            payment = new Payment();
+            payment.setPaymentCompleted(true);
             payment.setPaymentMode(PaymentMode.UPI);
+            payment.setReservation(reservation);
+            reservation.setPayment(payment);
+            reservationRepository2.save(reservation);
         }
-        else{
+        else {
+            payment = new Payment();
+            payment.setPaymentCompleted(false);
+//            payment.setPaymentMode(PaymentMode.valueOf(mode));
+            reservation.setPayment(payment);
+            payment.setReservation(reservation);
+            reservationRepository2.save(reservation);
             throw new Exception("Payment mode not detected");
         }
 
-        if(amountSent<bill){
-            throw new Exception("Insufficient Amount");
-        }
-        payment.setPaymentCompleted(true);
-        payment.setReservation(reservation);
-        spot.setOccupied(false);
-        reservation.setPayment(payment);
-        reservationRepository2.save(reservation);
         return payment;
     }
 }
